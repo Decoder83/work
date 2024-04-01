@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darbuotojų sąrašas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #employee-list {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Darbuotojų sąrašas</h1>
+    <form id="employee-form">
+        <label for="name">Vardas:</label>
+        <input type="text" id="name" required>
+        <label for="surname">Pavardė:</label>
+        <input type="text" id="surname" required>
+        <label for="salary">Atlyginimas:</label>
+        <input type="number" id="salary" required>
+        <button type="submit">Pridėti įrašą</button>
+    </form>
+    <ul id="employee-list"></ul>
+    <div id="summary"></div>
+
+    <script>
+        const form = document.getElementById('employee-form');
+        const nameInput = document.getElementById('name');
+        const surnameInput = document.getElementById('surname');
+        const salaryInput = document.getElementById('salary');
+        const employeeList = document.getElementById('employee-list');
+        const summaryDiv = document.getElementById('summary');
+
+        // Nuskaitome duomenis iš localstorage ir atvaizduojame
+        const employees = JSON.parse(localStorage.getItem('employees')) || [];
+        renderEmployees();
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const name = nameInput.value.trim();
+            const surname = surnameInput.value.trim();
+            const salary = parseFloat(salaryInput.value.trim());
+
+            if (name && surname && !isNaN(salary)) {
+                const employee = { name, surname, salary };
+                employees.push(employee);
+                localStorage.setItem('employees', JSON.stringify(employees));
+                renderEmployees();
+                form.reset();
+            }
+        });
+
+        function renderEmployees() {
+            employeeList.innerHTML = '';
+            let totalSalary = 0;
+
+            employees.forEach((employee, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${employee.name} ${employee.surname} - ${employee.salary} €`;
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Ištrinti';
+                deleteButton.addEventListener('click', () => {
+                    employees.splice(index, 1);
+                    localStorage.setItem('employees', JSON.stringify(employees));
+                    renderEmployees();
+                });
+                li.appendChild(deleteButton);
+                employeeList.appendChild(li);
+
+                totalSalary += employee.salary;
+            });
+
+            summaryDiv.innerHTML = `Visų darbuotojų atlyginimų suma: ${totalSalary.toFixed(2)} €<br>
+                                    Vidutinis darbuotojo atlyginimas: ${(totalSalary / employees.length).toFixed(2)} €`;
+        }
+    </script>
+</body>
+
+</html>
